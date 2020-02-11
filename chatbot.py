@@ -1,14 +1,9 @@
 # Building chatbot with D-NLP
-
-
 # Importing the Libraries
 import numpy as np
 import tensorflow as tf
 import re
 import time
-
-
-
 
 ############### PART 1 - DATA PREPROCESSING
 # Import Data
@@ -38,3 +33,31 @@ for k in conv_ids:
         ans.append(id2mline[k[l+1]])
         
 # Doing first cleaning of texts
+def clean_text(text):
+    text = text.lower()
+    text = re.sub(r"i'm", "i am", text)
+    text = re.sub(r"he's", "he is", text)
+    text = re.sub(r"she's", "she is", text)
+    text = re.sub(r"that's", "that is", text)
+    text = re.sub(r"what's", "what is", text)
+    text = re.sub(r"where's", "where is", text)
+    text = re.sub(r"\'ll", "will", text)
+    text = re.sub(r"\'ve", "have", text)
+    text = re.sub(r"\'re", "are", text)
+    text = re.sub(r"\'d", "would", text)
+    text = re.sub(r"won't", "will not", text)
+    text = re.sub(r"can't", "cannot", text)
+    text = re.sub(r"[-()\"#/@;:<>{}+=~|.?,]", "", text)
+    return text
+
+# Cleaning all questions
+cque = []
+for i in que:
+    cque.append(clean_text(i))
+
+# Cleaning all answers
+cans = []
+for j in ans:
+    cans.append(clean_text(j))
+    
+# Creating 
