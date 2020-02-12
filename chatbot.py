@@ -5,7 +5,7 @@ import tensorflow as tf
 import re
 import time
 
-############### PART 1 - DATA PREPROCESSING
+############### PART 1 - DATA PREPROCESSING ##################
 # Import Data
 m_lines = open('movie_lines.txt', encoding = 'utf-8', errors = 'ignore').read().split('\n')
 m_conversations = open('movie_conversations.txt', encoding = 'utf-8', errors = 'ignore').read().split('\n')
@@ -60,4 +60,90 @@ cans = []
 for j in ans:
     cans.append(clean_text(j))
     
-# Creating 
+# Creating a Dictionary that map each word to number of occurences
+word2count = {}
+
+for question in cque:
+    for word in question.split():
+        if word not in word2count: 
+            word2count[word] = 1
+        else:
+            word2count[word] +=1
+            
+for answer in cans:
+    for word in answer.split():
+        if word not in word2count: 
+            word2count[word] = 1
+        else:
+            word2count[word] +=1
+            
+# Tokenization and filtering non frequent works
+thresh = 20
+queswords2int = {}
+w_number = 0
+
+for word, count in word2count.items():
+    if count >= thresh:
+        queswords2int[word] = w_number
+        w_number += 1
+
+answords2int = {}
+w_number = 0
+
+for word, count in word2count.items():
+    if count >= thresh:
+        answords2int[word] = w_number
+        w_number += 1
+        
+# Adding the last tokens to 2 dictionaries
+tokens = ['<PAD>', '<EOS>', '<OUT>', '<SOS>']
+for token in tokens: 
+    queswords2int[token] = len(queswords2int) + 1
+    
+for token in tokens: 
+    answords2int[token] = len(answords2int) + 1
+
+# Inverse dictionary Mapping of the answords2int
+ansints2word = {w_i: w for w, w_i in answords2int.items()}
+
+# Adding the EOS token at end of every answer
+for i in range(len(cans)): 
+    cans[i] += ' <EOS>'
+    
+# Translating all ques and answers into integers 
+#& Replace all the words filtered out by <OUT>
+question2int = []
+for questions in cque:
+    ints = []
+    for word in questions.split():
+        if word not in queswords2int: 
+            ints.append(queswords2int['<OUT>'])
+        else:
+            ints.append(queswords2int[word])
+    question2int.append(ints)
+
+answers2int = []
+for answers in cans:
+    ints = []
+    for word in answers.split():
+        if word not in answords2int: 
+            ints.append(answords2int['<OUT>'])
+        else:
+            ints.append(answords2int[word])
+    answers2int.append(ints)
+    
+# Sort questions and answers by the length of questions
+sorted_cque = []
+sorted_cans = []
+
+for length in range(1, 26): 
+    for l in enumerate(question2int):
+        if len(l[1]) == length:
+            sorted_cque.append(question2int[l[0]])
+            sorted_cans.append(answers2int[l[0]])
+
+
+
+############ PART 2 - BUILDING THE SEQ2SEQ MODEL ##############
+# Creating placeholders for the answers and the targets
+            
