@@ -207,7 +207,6 @@ def decode_test_set(encoder_state,
                     sos_id, eos_id,
                     maximum_length,
                     num_words,
-                    sequence_length,
                     decoding_scope,
                     output_function,
                     keep_prob,
@@ -235,7 +234,16 @@ def decode_test_set(encoder_state,
     return test_predictions
 
 # Decoding RNN
-def decoder_rnn(decoder_embedded_input, decoder_embeddings_matrix, encoder_state, num_words, sequence_length, rnn_size, num_layers, word2int, keep_prob, batch_size):
+def decoder_rnn(decoder_embedded_input, 
+                decoder_embeddings_matrix, 
+                encoder_state, 
+                num_words, 
+                sequence_length, 
+                rnn_size, 
+                num_layers, 
+                word2int, 
+                keep_prob, 
+                batch_size):
     with tf.variable_scope('decoding') as decoding_scope: 
         lstm = tf.contrib.rnn.BasicLSTMCell(rnn_size)
         lstm_dropout = tf.contrib.rnn.DropoutWrapper(lstm, input_keep_prob = keep_prob)
@@ -262,7 +270,7 @@ def decoder_rnn(decoder_embedded_input, decoder_embeddings_matrix, encoder_state
         test_predictions = decode_test_set(encoder_state,
                                            decoder_cell,
                                            decoder_embeddings_matrix,
-                                           word2int['<SOP>'],
+                                           word2int['<SOS>'],
                                            word2int['<EOS>'], 
                                            sequence_length - 1, 
                                            num_words,
@@ -304,3 +312,45 @@ def seq2seq_model(inputs, targets, keep_prob, batch_size, sequence_length, answe
                                            batch_size)
     
     return training_pred, test_pred
+
+
+############ PART 3 - TRAINING THE SEQ2SEQ MODEL ##############
+# Setting the hyperparameters
+epochs = 100
+batch_size = 64
+rnn_size = 512
+num_layers = 3
+encoding_embedding_size = 512
+decoding_embedding_size = 512
+learning_rate = 0.01
+learning_rate_decay = 0.9
+min_learning_rate = 0.0001
+keep_probability = 0.5
+
+# Defining a session
+tf.reset_default_graph()
+session = tf.InteractiveSession()
+
+# Loading the model inputs
+inputs, targets, lr, keep_prob = model_inputs()
+
+# Setting the sequence length
+sequence_length = tf.placeholder_with_default(25, None, name = 'sequence_length')
+
+# Getting the shape of the input tensor
+input_shape = tf.shape(inputs)
+
+# Getting the training and test predictions
+training_prediction, test_prediction = seq2seq_model(tf.reverse(inputs, [-1]),
+                                                     targets,
+                                                     keep_prob,
+                                                     batch_size,
+                                                     sequence_length,
+                                                     len(answords2int),
+                                                     len(queswords2int),
+                                                     encoding_embedding_size,
+                                                     decoding_embedding_size,
+                                                     rnn_size,
+                                                     num_layers,
+                                                     queswords2int)
+
