@@ -4,4 +4,3 @@ This repository contains the work done during the course, which is published on 
 
 https://www.udemy.com/course/chatbot/
 
-This repository will be later integrated with other works and projects in the same discipline.
